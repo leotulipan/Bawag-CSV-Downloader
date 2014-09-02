@@ -2,6 +2,7 @@
   "name": "Bawag-CSV-Downloader"
 , "version": "0.0.1"
 , "dependencies": {
-    "dotenv": "*"
+    "dotenv": "*",
+    "slimerjs": "*"
   }
 }
