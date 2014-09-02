@@ -38,6 +38,7 @@ page.open('https://ebanking.bawagpsk.com/InternetBanking/InternetBanking?d=login
     {
       console.log("eBanking Version not supported: " + vnr)
       console.log("Supported Version: " + version)
+      // might not work. how to properly exit here?
       exit();
     }
     else
@@ -47,12 +48,16 @@ page.open('https://ebanking.bawagpsk.com/InternetBanking/InternetBanking?d=login
        $("input[name='dn']").val(dn)
        $("input[name='pin']").val(pin)
        $("#form").submit()
-      // submitLogin(document.loginForm)
-     console.log( $("#error_part_text").text() );
-     console.log( $(".login-error").text() );
-
     }
   }, version, dn, pin );
+
+  console.log("After first eval")
+  page.evaluate(function() {
+   console.log( $("#error_part_text").text() );
+  });
+
+/*  console.log( $("#error_part_text").text() );
+  console.log( $(".login-error").text() );*/
     phantom.exit();
   });
 });
