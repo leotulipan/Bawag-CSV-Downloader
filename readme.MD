@@ -21,8 +21,9 @@ to load all pre-requisite node modules
 ## Usage
 
 1. Fill in your banking details in the .env file (see dotenv.sample for more)
-2. Start the program with ```node bawag.js
+2. Start the program with ```node bawag.js```
 
 ## Known Issues
 
-This is an alpha version, and is basically just a stub. It loads the initial login-screen but cannot submit it yet.
+This is an alpha version, and is basically just a stub. It loads the initial login-screen, returns the first H3 element.
+It cannot submit forms (yet).
