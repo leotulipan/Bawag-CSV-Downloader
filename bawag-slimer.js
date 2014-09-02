@@ -11,7 +11,7 @@ var pin = system.env["BAWAG_PIN"];
 
 if(isNaN(parseFloat(dn)))
   {
-    console.log("No Login BAWAG_DN defined. Check your .env")
+    console.log("No Login variable BAWAG_DN defined. Check your .env")
     phantom.exit()
   }
 
@@ -36,7 +36,7 @@ page.open('https://ebanking.bawagpsk.com/InternetBanking/InternetBanking?d=login
     });
     if(vnr != version)
     {
-      console.log("eBanking Version no supported: " + vnr)
+      console.log("eBanking Version not supported: " + vnr)
       console.log("Supported Version: " + version)
       exit();
     }

@@ -25,5 +25,8 @@ to load all pre-requisite node modules
 
 ## Known Issues
 
-This is an alpha version, and is basically just a stub. It loads the initial login-screen, returns the first H3 element.
+This is an alpha version, and is basically just a stub.
+* It loads the initial login-screen
+* Checks the eBanking version number
+* returns the first H3 element.
 It cannot submit forms (yet).
