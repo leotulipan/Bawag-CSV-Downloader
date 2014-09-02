@@ -52,35 +52,17 @@ page.open('https://ebanking.bawagpsk.com/InternetBanking/InternetBanking?d=login
   }, version, dn, pin );
 
   console.log("After first eval")
-  page.evaluate(function() {
-   console.log( $("#error_part_text").text() );
-  });
 
-/*  console.log( $("#error_part_text").text() );
-  console.log( $(".login-error").text() );*/
-    phantom.exit();
+  // We are now after the submit event. But How do I get at the page?
+  // THis code doesnt work. even when wrapped in an additional page.includeJs
+  page.evaluate(function() {
+     console.log( $("#error_part_text").text() );
+
+   });
+
+
+  alert("Stop to view screen");
+
+  phantom.exit();
   });
 });
-
-
-/* page.open("https://ebanking.bawagpsk.com/InternetBanking/InternetBanking?d=login&svc=BAWAG&ui=html&lang=de", function() {
-  page.includeJs("https://code.jquery.com/jquery-2.1.1.js", function() {
-    page.evaluate(function() {
-       page.viewportSize = { width:1024, height:768 };
-       // in case of:  page.render('screenshot.png')
-         if (status == "success") {
-             var mainTitle = page.evaluate(function () {
-                console.log('message from the web page');
-              //  return document.querySelector("h3").textContent;
-              return $("h3").first().text();
-            });
-             console.log("The title of the page is: "+ mainTitle);
-         }
-         else {
-             console.log("Sorry, could not access page. Are your Intertubes connected?");
-         }
-         page.close();
-         phantom.exit();
-       });
-     }); // includeJS
-   }); // page.open */
