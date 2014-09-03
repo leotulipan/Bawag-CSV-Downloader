@@ -40,8 +40,8 @@ fs.createReadStream('my-secret-sample.csv')
 
     // replace , with . in amount
     // Umlaut/ UTF8 Bug / Windows Encoding
-    console.log(data["amount"])
-    transactions.push(data)
+    console.log(data["amount"].replace(".","").replace(",","."))
+    transactions.push({ "amount": data["amount"].replace(".","").replace(",","."), "memo": data["memo"], "date": data["date"] })
 }).on('end', function() {
   console.log("Read", transactions.length, "Transactions from CSV")
   qif.writeToFile({cash: transactions}, './out.qif', function (err, qifData) {
