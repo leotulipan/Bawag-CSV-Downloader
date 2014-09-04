@@ -16,6 +16,19 @@ var transactions = []
 ]
 }; */
 
+var payees = {
+  Hofer: ["HOFER DANKT", "Alltag: Lebensmittel"],
+  Merkur: ["MERKUR DANKT", "Alltag: Lebensmittel"],
+  Fressnapf: ["FRESSNAPF", "Tiere: Futter"],
+  A1: ["A1 RECHNUNG", "Monatliche Fixkosten: Telefon & Internet"],
+  Bankgebühren: ["KARTENGEBUEHR", "Projekte: Steuern & Gebühren"],
+  Bauhaus: ["BAUHAUS", "Projekte: Wohnen, Möbel, Garten"],
+  "Bob Rechnung": ["BOB RECHNUNG", "Monatliche Fixkosten: Telefon & Internet"],
+  DM: [ "DM-FIL.", "Alltag: Medizin & Gesundheit"],
+  Bankgebühren: ["Einbehaltene KESt", "Projekte: Steuern & Gebühren"]
+
+}
+
 var qif = require('qif');
 
 var fs = require('fs')
@@ -37,11 +50,30 @@ fs.createReadStream('my-secret-sample.csv')
     separator: ';' // specify optional cell separator
     }))
   .on('data', function(data) {
+    var payee = "", category = ""
+    // replace , with . in amount (US format)
+    data["amount"] = data["amount"].replace(".","").replace(",",".")
+    var info = data["memo"].split(/(AT|BG|FE|IG|MC|OG|VB|VD)\/(\d\d\d\d\d\d\d\d\d)\s/)
+    //remove leading 0 in transaction/checknumber
+    info[2] = info[2].replace(/^0*/,'')
 
-    // replace , with . in amount
-    // Umlaut/ UTF8 Bug / Windows Encoding
-    console.log(data["amount"].replace(".","").replace(",","."))
-    transactions.push({ "amount": data["amount"].replace(".","").replace(",","."), "memo": data["memo"], "date": data["date"] })
+    for(key in payees){
+     // The key is key
+     // The value is obj[key]
+     if( (info[0] + info[3]).match(payees[key][0]) )
+       {
+         console.log(key, payees[key][1])
+         payee = key
+         category = payees[key][1]
+       }
+    }
+
+
+    transactions.push( { "amount": data["amount"],
+                         "memo": info[0] + ' '+ info[3],
+                         "checknumber": info[2],
+                         "category": category,
+                         "date": data["date"] })
 }).on('end', function() {
   console.log("Read", transactions.length, "Transactions from CSV")
   qif.writeToFile({cash: transactions}, './out.qif', function (err, qifData) {
