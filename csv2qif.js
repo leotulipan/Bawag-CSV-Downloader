@@ -43,7 +43,7 @@ function parseCsvFile(fileName, callback){
   var stream = fs.createReadStream(fileName)
 */
 
-fs.createReadStream('my-secret-sample.csv')
+fs.createReadStream('my-secret-sample.csv', {encoding: 'ascii'})
   .pipe(csv({
     raw: false,    // do not decode to utf-8 strings
     headers: ["KtoNr", "memo", "Valuta", "date", "amount", "Balance", "Currency"],
@@ -65,14 +65,25 @@ fs.createReadStream('my-secret-sample.csv')
          category = payees[key][1]
        }
     }
-   if(info[0].match(/Bezahlung Maestro/))
-     {
+    if(info[0].match(/Bezahlung Maestro/))
+     { info[0] = info[0].replace(/Bezahlung Maestro\s*(\d*\.\d\d\s*|\s*)/,"" ) }
+    if(info[0].match(/Gutschrift .berweisung/))
+     { info[0] = info[0].replace(/Gutschrift .berweisung\s*/,"" ) }
+    if(info[0].match(/Abbuchung Einzugserm.chtigung/))
+     { info[0] = info[0].replace(/Abbuchung Einzugserm.chtigung\s*(\d*|\s*).*BKAUATWWXXX AT\d*/,"" ) }
+    if(info[0].match(/Auszahlung Maestro/))
+     // this one doesnt work:
+     { info[0] = info[0].replace(/Auszahlung Maestro(\s|\.|\d)*AUTOMAT/,"Bankomat" ) }
+    if(info[0].match(/Abbuchung Einzugserm.chtigung/))
+     { info[0] = info[0].replace(/Abbuchung Einzugserm.chtigung\s*/,"" ) }
+    if(info[0].match(/Gutschrift EU-Standardzahlung/))
+     { info[0] = info[0].replace(/Gutschrift EU-Standardzahlung\s*(\d*|\s*)/,"" ) }
+    if(info[0].match(/Abbuchung Onlinebanking/))
+     { info[0] = info[0].replace(/Abbuchung Onlinebanking\s*(\d*|\s*)/,"" ) }
+    if(info[0].match(/Abbuchung Dauerauftrag/))
+     { info[0] = info[0].replace(/Abbuchung Dauerauftrag\s*(\d*|\s*)/,"" ) }
 
-              console.log("replaced:", info[0])
-      info[0] = info[0].replace(/Bezahlung Maestro\s*(\d*\.\d\d\s*|\s*)/,"" )
-
-     }
-
+    console.log("memo", info[0] + ' '+ info[3])
     transaction = {"amount": data["amount"],
                    "payee": payee,
                    "memo": info[0] + ' '+ info[3],
