@@ -58,22 +58,30 @@ fs.createReadStream('my-secret-sample.csv')
     info[2] = info[2].replace(/^0*/,'')
 
     for(key in payees){
-     // The key is key
-     // The value is obj[key]
      if( (info[0] + info[3]).match(payees[key][0]) )
        {
-         console.log(key, payees[key][1])
+         //console.log(key, payees[key][1])
          payee = key
          category = payees[key][1]
        }
     }
+   if(info[0].match(/Bezahlung Maestro/))
+     {
 
+              console.log("replaced:", info[0])
+      info[0] = info[0].replace(/Bezahlung Maestro\s*(\d*\.\d\d\s*|\s*)/,"" )
 
-    transactions.push( { "amount": data["amount"],
-                         "memo": info[0] + ' '+ info[3],
-                         "checknumber": info[2],
-                         "category": category,
-                         "date": data["date"] })
+     }
+
+    transaction = {"amount": data["amount"],
+                   "payee": payee,
+                   "memo": info[0] + ' '+ info[3],
+                   "checknumber": info[2],
+                   "category": category,
+                   "date": data["date"] }
+
+    //console.log("Transaction:", transaction)
+    transactions.push( transaction )
 }).on('end', function() {
   console.log("Read", transactions.length, "Transactions from CSV")
   qif.writeToFile({cash: transactions}, './out.qif', function (err, qifData) {
