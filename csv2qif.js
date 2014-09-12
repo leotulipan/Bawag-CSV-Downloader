@@ -36,14 +36,25 @@ var sys = require('sys')
 
 var csv = require('csv-parser')
 
+var cmdline = require('commander');
+
+cmdline
+  .version('0.0.2')
+  .option('-i, --input [filename]', 'Input file name including .csv ending. Default input.csv', "input.csv")
+  .option('-o, --output [filename]', 'Output file name including .qif ending. Default output.qif', "output.qif")
+  .parse(process.argv);
+
 /*
 Maybe more synchronous with this snippet in the future?
 
 function parseCsvFile(fileName, callback){
   var stream = fs.createReadStream(fileName)
 */
+// console.log("input: ", cmdline.input)
+// console.log("output: ", cmdline.output)
+// process.exit(0);
 
-fs.createReadStream('my-secret-sample.csv', {encoding: 'ascii'})
+fs.createReadStream(cmdline.input, {encoding: 'ascii'})
   .pipe(csv({
     raw: false,    // do not decode to utf-8 strings
     headers: ["KtoNr", "memo", "Valuta", "date", "amount", "Balance", "Currency"],
@@ -95,7 +106,7 @@ fs.createReadStream('my-secret-sample.csv', {encoding: 'ascii'})
     transactions.push( transaction )
 }).on('end', function() {
   console.log("Read", transactions.length, "Transactions from CSV")
-  qif.writeToFile({cash: transactions}, './out.qif', function (err, qifData) {
+  qif.writeToFile({cash: transactions}, cmdline.output, function (err, qifData) {
     if(err)
       {
         console.log("Err: ", err, "qif ", qifData)
