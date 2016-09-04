@@ -40,8 +40,10 @@ var cmdline = require('commander');
 
 cmdline
   .version('0.0.2')
-  .option('-i, --input [filename]', 'Input file name including .csv ending. Default input.csv', "input.csv")
-  .option('-o, --output [filename]', 'Output file name including .qif ending. Default output.qif', "output.qif")
+  .option('-i, --input [filename]', 'Input file w/out .csv ending. Default "input"', "input")
+  .option('-o, --output [filename]', 'Output file name w/out .qif ending. Default "output"', "output")
+  .option('-c, --check [999]', 'Starting from Checknumber 999', 0)
+  .option('-d, --date [YYYY-MM-DD]', 'Starting from Date', "1978-04-27")
   .parse(process.argv);
 
 /*
@@ -53,8 +55,8 @@ function parseCsvFile(fileName, callback){
 // console.log("input: ", cmdline.input)
 // console.log("output: ", cmdline.output)
 // process.exit(0);
-
-fs.createReadStream(cmdline.input, {encoding: 'ascii'})
+console.log("File: " + cmdline.input + ".csv");
+fs.createReadStream(cmdline.input + ".csv", {encoding: 'ascii'})
   .pipe(csv({
     raw: false,    // do not decode to utf-8 strings
     headers: ["KtoNr", "memo", "Valuta", "date", "amount", "Balance", "Currency"],
@@ -64,7 +66,10 @@ fs.createReadStream(cmdline.input, {encoding: 'ascii'})
     var payee = "", category = ""
     // replace , with . in amount (US format)
     data["amount"] = data["amount"].replace(".","").replace(",",".")
-    var info = data["memo"].split(/(AT|BG|FE|IG|MC|OG|VB|VD)\/(\d\d\d\d\d\d\d\d\d)\s/)
+
+    // VA: Scheckeinreichung
+    var info = data["memo"].split(/(AT|BG|FE|IG|MC|OG|VB|VD|VA|BX)\/(\d\d\d\d\d\d\d\d\d)/)
+	
     //remove leading 0 in transaction/checknumber
     info[2] = info[2].replace(/^0*/,'')
 
@@ -94,19 +99,27 @@ fs.createReadStream(cmdline.input, {encoding: 'ascii'})
     if(info[0].match(/Abbuchung Dauerauftrag/))
      { info[0] = info[0].replace(/Abbuchung Dauerauftrag\s*(\d*|\s*)/,"" ) }
 
-    console.log("memo", info[0] + ' '+ info[3])
-    transaction = {"amount": data["amount"],
-                   "payee": payee,
-                   "memo": info[0] + ' '+ info[3],
-                   "checknumber": info[2],
-                   "category": category,
-                   "date": data["date"] }
-
-    //console.log("Transaction:", transaction)
-    transactions.push( transaction )
+    /* https://stackoverflow.com/questions/1133770/how-do-i-convert-a-string-into-an-integer-in-javascript */
+    
+    check_input = +info[2]
+    check_cmd = +cmdline.check
+    if(  (check_cmd != 0 && check_input > check_cmd) 
+         || check_cmd === 0)
+	{
+        console.log("no: -"+ info[2] + "- ("+ cmdline.check +")");
+        
+		transaction = {"amount": data["amount"],
+					   "payee": payee,
+					   "memo": info[0] + ' '+ info[3],
+					   "checknumber": info[2],
+					   "category": category,
+					   "date": data["date"] }
+	 /*console.log("Transaction:", transaction)*/
+        transactions.push( transaction )
+    }
 }).on('end', function() {
   console.log("Read", transactions.length, "Transactions from CSV")
-  qif.writeToFile({cash: transactions}, cmdline.output, function (err, qifData) {
+  qif.writeToFile({cash: transactions}, cmdline.output + ".qif", function (err, qifData) {
     if(err)
       {
         console.log("Err: ", err, "qif ", qifData)
