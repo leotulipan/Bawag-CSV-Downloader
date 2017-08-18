@@ -1,7 +1,7 @@
 {
   "name": "Bawag-CSV-Downloader",
   "version": "0.0.2",
-  "description": "Get's your latest bank statements as .csv files from the Austrian BAWAG ebanking website.",
+  "description": "Converts your latest bank statements as .csv files from the Austrian BAWAG ebanking website.",
   "main": "bawag.js",
   "dependencies": {
     "dotenv": "*",
@@ -9,10 +9,13 @@
     "qif": "*",
     "csv-parser": "*"
   },
-  "author": "khbites",
+  "author": "leotulipan",
   "license": "MIT",
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/khbites/Bawag-CSV-Downloader"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/khbites/Bawag-CSV-Downloader"
+  },
+  "devDependencies": {
+    "commander": "^2.11.0"
   }
 }

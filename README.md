@@ -1,6 +1,7 @@
 #BAWAG CSV Downloader
 
-The goal of this script is to be able to download your .csv Files from the BAWAG Banking server.
+The goal of this script is to be able to download your .csv Files from the BAWAG Banking server. And make them importable to YNAB
+Currently you can only convert already downloaded csv files
 
 ## Installation
 
@@ -25,7 +26,7 @@ to load all pre-requisite node modules
 
 ## Known Issues
 
-This is an alpha version, and is basically just a stub.
+The Download script is is an alpha version (basically just a stub) which can:
 
 * It loads the initial login-screen
 * Checks the eBanking version number
