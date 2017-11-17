@@ -13,9 +13,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/khbites/Bawag-CSV-Downloader"
+    "url": "https://github.com/leotulipan/Bawag-CSV-Downloader"
   },
   "devDependencies": {
-    "commander": "^2.11.0"
+    "commander": "^2.11.0",
+    "papaparse": "^4.3.6"
   }
 }
