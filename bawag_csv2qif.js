@@ -172,8 +172,22 @@ var csv_file = fs.readFileSync(input_filename, {
 });
 var json_data = Papa.parse(csv_file, mc_csv_config)
 
-// "02.11.2017"
-console.log(json_data.data[0].Buchungsdatum.replace(/(\d{1,2})\.(\d{1,2})\.(\d{4})/, "$3-$2-$1"))
+// Reformat Date "02.11.2017"
+json_data.data = json_data.data.map(function (line) {
+  line.Buchungsdatum = line.Buchungsdatum.replace(/(\d{1,2})\.(\d{1,2})\.(\d{4})/, "$3-$2-$1")
+  line.Transaktionsdatum = line.Transaktionsdatum.replace(/(\d{1,2})\.(\d{1,2})\.(\d{4})/, "$3-$2-$1")
+  line.Abrechnungsdatum = line.Abrechnungsdatum.replace(/(\d{1,2})\.(\d{1,2})\.(\d{4})/, "$3-$2-$1")
+  return line
+}).filter(function (
+  currentValue
+) {
+  // console.log(new Date(currentValue.Buchungsdatum + "T00:00:00Z"))
+  if (new Date(currentValue.Buchungsdatum) > new Date(cmdline.date)) {
+    return currentValue
+  }
+})
+
+console.log(json_data.data.length)
 //   csv({
 //   raw: false, // do not decode to utf-8 strings
 //   headers: ["KtoNr", "memo", "Valuta", "date", "amount", "Balance", "Currency"],
