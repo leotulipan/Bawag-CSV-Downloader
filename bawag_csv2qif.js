@@ -47,6 +47,7 @@ var mc_csv_config = {
   header: true,
   dynamicTyping: true,
   preview: 0,
+  // Encoding: https://nodejs.org/api/buffer.html#buffer_buffers_and_character_encodings
   encoding: "latin1",
   worker: false,
   comments: false,
@@ -139,37 +140,39 @@ function prepare_bawag(data) {
   }
 }
 
+// Iso Regex http://regexlib.com/REDetails.aspx?regexp_id=3344&AspxAutoDetectCookieSupport=1
+var iso8601_regex = /^(?:(?=[02468][048]00|[13579][26]00|[0-9][0-9]0[48]|[0-9][0-9][2468][048]|[0-9][0-9][13579][26])\d{4}(?:(-|)(?:(?:00[1-9]|0[1-9][0-9]|[1-2][0-9][0-9]|3[0-5][0-9]|36[0-6])|(?:01|03|05|07|08|10|12)(?:\1(?:0[1-9]|[12][0-9]|3[01]))?|(?:04|06|09|11)(?:\1(?:0[1-9]|[12][0-9]|30))?|02(?:\1(?:0[1-9]|[12][0-9]))?|W(?:0[1-9]|[1-4][0-9]|5[0-3])(?:\1[1-7])?))?)$|^(?:(?![02468][048]00|[13579][26]00|[0-9][0-9]0[48]|[0-9][0-9][2468][048]|[0-9][0-9][13579][26])\d{4}(?:(-|)(?:(?:00[1-9]|0[1-9][0-9]|[1-2][0-9][0-9]|3[0-5][0-9]|36[0-5])|(?:01|03|05|07|08|10|12)(?:\2(?:0[1-9]|[12][0-9]|3[01]))?|(?:04|06|09|11)(?:\2(?:0[1-9]|[12][0-9]|30))?|(?:02)(?:\2(?:0[1-9]|1[0-9]|2[0-8]))?|W(?:0[1-9]|[1-4][0-9]|5[0-3])(?:\2[1-7])?))?)$/
 
 cmdline
-  .version('0.0.2')
-  .option('-i, --input [filename]', 'Input file w/out .csv ending. Default "input"', "input")
+  .version('0.0.3')
+  .option('-i, --input [filename]', 'Input file (.csv is added if needed). Default "input.csv"', "input")
   .option('-o, --output [filename]', 'Output file name w/out .qif ending. Default "output"', "output")
-  .option('-c, --check [999]', 'Starting from (and including) Checknumber 999', 0)
-  /* .option('-d, --date [YYYY-MM-DD]', 'Starting from Date', "1978-04-27") */
+  .option('-d, --date [YYYY-MM-DD]', 'Starting from Date', iso8601_regex)
   .parse(process.argv);
 
-/*
-Maybe more synchronous with this snippet in the future?
+if (cmdline.date === true) {
+  console.error('Not a valid date!');
+  process.exit(1);
+}
 
-function parseCsvFile(fileName, callback){
-  var stream = fs.createReadStream(fileName)
-*/
-// console.log("input: ", cmdline.input)
-// console.log("output: ", cmdline.output)
-// process.exit(0);
+var input_filename = cmdline.input
+if (input_filename.match(/(?:\.([^.]+))?$/)[1] == undefined) {
+  input_filename += ".csv"
+}
 
-// Encoding: https://nodejs.org/api/buffer.html#buffer_buffers_and_character_encodings
-console.log("File: " + cmdline.input + ".csv");
-// fs.createReadStream(cmdline.input + ".csv", {
-//   encoding: 'latin1'
-// })
+try {
+  fs.accessSync(input_filename)
+} catch (err) {
+  console.error(input_filename + ' file not found');
+  process.exit(1);
+}
 
-var csv_file = fs.readFileSync(cmdline.input + ".csv", {
+var csv_file = fs.readFileSync(input_filename, {
   encoding: 'latin1'
 });
 var json_data = Papa.parse(csv_file, mc_csv_config)
 
-console.dir(json_data)
+console.log(cmdline.date)
 //   csv({
 //   raw: false, // do not decode to utf-8 strings
 //   headers: ["KtoNr", "memo", "Valuta", "date", "amount", "Balance", "Currency"],
