@@ -172,7 +172,8 @@ var csv_file = fs.readFileSync(input_filename, {
 });
 var json_data = Papa.parse(csv_file, mc_csv_config)
 
-console.log(cmdline.date)
+// "02.11.2017"
+console.log(json_data.data[0].Buchungsdatum.replace(/(\d{1,2})\.(\d{1,2})\.(\d{4})/, "$3-$2-$1"))
 //   csv({
 //   raw: false, // do not decode to utf-8 strings
 //   headers: ["KtoNr", "memo", "Valuta", "date", "amount", "Balance", "Currency"],
