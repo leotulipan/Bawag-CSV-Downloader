@@ -1,15 +1,11 @@
-var qif = require('qif');
-
 var fs = require('fs')
-// var sys = require('sys')
-
-var csv = require('csv-parser')
 
 var cmdline = require('commander');
 
 // Inspiration via https://dev.to/jorinvo/csv-challenge-1al/comments
 var Papa = require('papaparse')
 
+var qif = require('qif');
 
 var transactions = []
 /*cash: [
