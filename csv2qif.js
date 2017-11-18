@@ -63,6 +63,22 @@ var mc_csv_config = {
   withCredentials: undefined
 }
 
+var mc_fields = ["Buchungsdatum",
+  "Transaktionsdatum",
+  "Abrechnungsdatum",
+  "Rechnungstext",
+  "Kartennummer",
+  "Währung",
+  "Betrag in Fremdwährung",
+  "Währung",
+  "Manipulationsentgelt in EUR",
+  "Währung",
+  "Betrag",
+  "Verwendeter Umrechnungskurs"
+]
+
+var mc_date_field = "Buchungsdatum"
+
 //   ,
 //   error: function (err, file, inputElem, reason) {
 //     // executed if an error occurs while loading the file,
