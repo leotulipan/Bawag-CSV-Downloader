@@ -1,3 +1,14 @@
+/**
+ * 
+ * next steps:
+ *  replace payee (create regex-es)
+ *  determine categories (create json config)
+ *  safe to qif
+ *  refactor to ts
+ *  refactor mc to a class
+ */
+
+
 var fs = require('fs')
 
 var cmdline = require('commander');
@@ -86,22 +97,14 @@ var mc_fields = ["Buchungsdatum",
   "Verwendeter Umrechnungskurs"
 ]
 
-var mc_date_field = "Buchungsdatum"
-
-//   ,
-//   error: function (err, file, inputElem, reason) {
-//     // executed if an error occurs while loading the file,
-//     // or if before callback aborted for some reason
-//     console.log("ERROR: " + err + "\n" + reason)
-//   }
-// }
+var mc_date_field = "Buchungsdatum";
 
 function parse_bawag(data) {
   console.log("we got data")
   var payee = "",
     category = ""
   // replace , with . in amount (US format)
-  data["amount"] = data["amount"].replace(".", "").replace(",", ".")
+  data["amount"] = to_us(data["amount"])
 
   // VA: Scheckeinreichung
   var info = data["memo"].split(/(AT|BG|FE|IG|MC|OG|VB|VD|VA|BX)\/(\d\d\d\d\d\d\d\d\d)/)
@@ -165,12 +168,54 @@ function parse_bawag(data) {
     transactions.push(transaction)
   }
 }
+// convert amount to US format "replace , with ."
+function to_us(amount) {
+  return amount.replace(".", "").replace(",", ".");
+}
+
+//     "Rechnungstext": "Amazon UK Marketplace  800-279-6620  LUX",
+function get_payee(desc) {
+  return desc.substr(0, 22).trim()
+}
+
+//     "Betrag in Fremdwährung": "-15,99",
+//     "Manipulationsentgelt in EUR": "-0,30",
+//     "Verwendeter Umrechnungskurs": "0,86955"
+function create_memo(line) {
+  if (line["Betrag in Fremdwährung"] === line["Betrag"]) return ""
+
+  if (line["Verwendeter Umrechnungskurs"] === "0,00") {
+    kurs = ""
+  } else {
+    kurs = " / " + line["Verwendeter Umrechnungskurs"] + " (Kurs) "
+  }
+
+  return "Betrag: " + line["Betrag in Fremdwährung"].replace(/-/, "¤") +
+    kurs +
+    line["Manipulationsentgelt in EUR"].replace(/-/, "+ € ") + " (Gebühr)"
+}
+
+// convert json to transaction array
+function convert_mc(lines) {
+  lines.map(function (line) {
+    transaction = {
+      "date": line["Buchungsdatum"],
+      "amount": to_us(line["Betrag"]),
+      "payee": get_payee(line["Rechnungstext"]),
+      "memo": create_memo(line),
+      // "checknumber": info[2],
+    }
+    // transaction.category = get_category(transactions.payee)
+    console.log("Transaction: ", transaction)
+    transactions.push(transaction)
+  })
+}
 
 cmdline
   .version('0.0.3')
   .option('-i, --input [filename]', 'Input file (.csv is added if needed). Default "input.csv"', "input")
   .option('-o, --output [filename]', 'Output file name w/out .qif ending. Default "output"', "output")
-  .option('-d, --date [YYYY-MM-DD]', 'Starting from Date', iso8601_regex)
+  .option('-d, --date [YYYY-MM-DD]', 'Starting from Date', iso8601_regex, "1970-01-01")
   .parse(process.argv);
 
 if (cmdline.date === true) {
@@ -195,20 +240,19 @@ var csv_file = fs.readFileSync(input_filename, {
 });
 var json_data = Papa.parse(csv_file, mc_csv_config)
 
-// Reformat Date "02.11.2017"
+// Reformat Date "02.11.2017" => iso8601 & filter
 json_data.data = json_data.data.map(function (line) {
   line[mc_date_field] = line[mc_date_field].replace(/(\d{1,2})\.(\d{1,2})\.(\d{4})/, "$3-$2-$1")
   // line.Transaktionsdatum = line.Transaktionsdatum.replace(/(\d{1,2})\.(\d{1,2})\.(\d{4})/, "$3-$2-$1")
   // line.Abrechnungsdatum = line.Abrechnungsdatum.replace(/(\d{1,2})\.(\d{1,2})\.(\d{4})/, "$3-$2-$1")
   return line
-}).filter(function (
-  currentValue
-) {
-  // console.log(new Date(currentValue.Buchungsdatum + "T00:00:00Z"))
-  if (new Date(currentValue[mc_date_field]) > new Date(cmdline.date)) {
-    return currentValue
+}).filter(function (line) {
+  if (new Date(line[mc_date_field]) >= new Date(cmdline.date)) {
+    return line
   }
 })
+
+convert_mc(json_data.data)
 
 console.log(json_data.data.length)
 //   csv({
