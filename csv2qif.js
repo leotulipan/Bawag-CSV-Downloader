@@ -1,8 +1,7 @@
 /**
  * 
  * next steps:
- *  replace payee (create regex-es)
- *  determine categories (create json config)
+ *  payee_transform = whole line, because memo (ex paypal) + category
  *  safe to qif
  *  refactor to ts
  *  refactor mc to a class
@@ -39,15 +38,14 @@ var transactions = []
 ]
 }; */
 
-var payee_transform = {
-  "HEDGEYE RISK MGMT": "Hedgeye",
-  "HOFER DANKT": "Hofer",
-  "AMAZON.CO.UK": "Amazon",
-  "Amazon UK Marketplace": "Amazon",
-  "EASYJET000    ET44K39": "Easyjet"
-  // Easyjet: /^EASYJET/i
+var payee_transform = [
+  [/HEDGEYE RISK MGMT/, "Hedgeye"],
+  [/HOFER DANKT/, "Hofer", "Alltag: Lebensmittel"],
+  [/^Amazon.*/i, "Amazon"],
+  [/^EASYJET.*/, "Easyjet"],
+  [/SIXT CAR RENTAL/, "Sixt"]
   // PAYPAL *TANGXIAOLAN => "Paypal"
-}
+]
 
 var payees = {
   Hofer: ["HOFER DANKT", "Alltag: Lebensmittel"],
@@ -175,13 +173,18 @@ function to_us(amount) {
 
 //     "Rechnungstext": "Amazon UK Marketplace  800-279-6620  LUX",
 function get_payee(desc) {
-  return desc.substr(0, 22).trim()
+  var trimmed = desc.substr(0, 22).trim()
+  payee_transform.forEach(function (payee) {
+    trimmed = trimmed.replace(payee[0], payee[1])
+  })
+  return trimmed
+
 }
 
 //     "Betrag in Fremdwährung": "-15,99",
 //     "Manipulationsentgelt in EUR": "-0,30",
 //     "Verwendeter Umrechnungskurs": "0,86955"
-function create_memo(line) {
+function create_memo_mc(line) {
   if (line["Betrag in Fremdwährung"] === line["Betrag"]) return ""
 
   if (line["Verwendeter Umrechnungskurs"] === "0,00") {
@@ -202,7 +205,7 @@ function convert_mc(lines) {
       "date": line["Buchungsdatum"],
       "amount": to_us(line["Betrag"]),
       "payee": get_payee(line["Rechnungstext"]),
-      "memo": create_memo(line),
+      "memo": create_memo_mc(line),
       // "checknumber": info[2],
     }
     // transaction.category = get_category(transactions.payee)
